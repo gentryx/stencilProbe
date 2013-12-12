@@ -109,13 +109,13 @@ int main(int argc, char **argv)
     for (int i = 1; i < argc; ++i) {
         buf << argv[i] << " ";
     }
-    int dimX, dimY, dimZ, repeats, int cudaDevice;
+    int dimX, dimY, dimZ, repeats, cudaDevice;
     buf >> dimX;
     buf >> dimY;
     buf >> dimZ;
     buf >> repeats;
     buf >> cudaDevice;
-    setCudaDevice(cudaDevice);
+    cudaSetDevice(cudaDevice);
     dim3 blockDim(32, 32, 1);
 
     if (argc > 5) {
