@@ -28,7 +28,7 @@ void init(double *gridNew, int dimX, int dimY, int dimZ)
     for (int z = 0; z < dimZ; ++z) {
         for (int y = 0; y < dimY; ++y) {
             for (int x = 0; x < dimX; ++x) {
-                double value = 1;
+                double value = 0;
                 if ((x * y * z) == 0) {
                     value = 1;
                 }
@@ -72,8 +72,9 @@ int main(int argc, char **argv)
         return 1;
     }
     std::stringstream buf;
-    for (int i = 1; i <= 4; ++i)
+    for (int i = 1; i < argc; ++i) {
         buf << argv[i] << " ";
+    }
     int dimX, dimY, dimZ, repeats;
     buf >> dimX;
     buf >> dimY;

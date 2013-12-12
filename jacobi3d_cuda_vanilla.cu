@@ -101,20 +101,21 @@ void benchmark(std::vector<double> *gridOld, std::vector<double> *gridNew, int d
 
 int main(int argc, char **argv)
 {
-    if ((argc < 5) || (argc > 8)) {
-        std::cerr << "usage: " << argv[0] << " DIM_X DIM_Y DIM_Z REPEATS [BLOCK_DIM_X=32] [BLOCK_DIM_Y=32] [BLOCK_DIM_Z=1] \n";
+    if ((argc < 6) || (argc > 9)) {
+        std::cerr << "usage: " << argv[0] << " DIM_X DIM_Y DIM_Z REPEATS CUDA_DEVICE [BLOCK_DIM_X=32] [BLOCK_DIM_Y=32] [BLOCK_DIM_Z=1] \n";
         return 1;
     }
     std::stringstream buf;
-    int i;
-    for (i = 1; i < argc; ++i) {
+    for (int i = 1; i < argc; ++i) {
         buf << argv[i] << " ";
     }
-    int dimX, dimY, dimZ, repeats;
+    int dimX, dimY, dimZ, repeats, int cudaDevice;
     buf >> dimX;
     buf >> dimY;
     buf >> dimZ;
     buf >> repeats;
+    buf >> cudaDevice;
+    setCudaDevice(cudaDevice);
     dim3 blockDim(32, 32, 1);
 
     if (argc > 5) {
