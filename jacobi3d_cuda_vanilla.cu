@@ -10,6 +10,7 @@ __global__ void update(double *gridOld, double *gridNew, int dimX, int dimY, int
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
     int z = threadIdx.z + blockIdx.z * blockDim.z;
+
     if ((x == 0) || (x >= (dimX - 1)) ||
         (y == 0) || (y >= (dimY - 1)) ||
         (z == 0) || (z >= (dimZ - 1))) {
@@ -60,7 +61,7 @@ int divAndRoundUp(int dim, int blockDim)
     return res;
 }
 
-void benchmark(std::vector<double> *gridOld, std::vector<double> *gridNew, int dimX, int dimY, int dimZ, int repeats)
+void benchmark(std::vector<double> *gridOld, std::vector<double> *gridNew, int dimX, int dimY, int dimZ, int repeats, dim3 blockDim)
 {
     int byteSize = dimX * dimY * dimZ * sizeof(double);
     double *devGridOld;
@@ -69,7 +70,6 @@ void benchmark(std::vector<double> *gridOld, std::vector<double> *gridNew, int d
     cudaMalloc(&devGridNew, byteSize);
     cudaMemcpy(devGridOld, &gridOld->front(), byteSize, cudaMemcpyHostToDevice);
     cudaMemcpy(devGridNew, &gridNew->front(), byteSize, cudaMemcpyHostToDevice);
-    dim3 blockDim(32, 32, 1);
     dim3 gridDim(divAndRoundUp(dimX, blockDim.x),
                  divAndRoundUp(dimY, blockDim.y),
                  divAndRoundUp(dimZ, blockDim.z));
@@ -86,18 +86,33 @@ void benchmark(std::vector<double> *gridOld, std::vector<double> *gridNew, int d
 
 int main(int argc, char **argv)
 {
-    if (argc != 5) {
-        std::cerr << "usage: " << argv[0] << " DIM_X DIM_Y DIM_Z REPEATS\n";
+    if ((argc < 5) || (argc > 8)) {
+        std::cerr << "usage: " << argv[0] << " DIM_X DIM_Y DIM_Z REPEATS [BLOCK_DIM_X=32] [BLOCK_DIM_Y=32] [BLOCK_DIM_Z=1] \n";
         return 1;
     }
     std::stringstream buf;
-    for (int i = 1; i <= 4; ++i)
+    int i;
+    for (i = 1; i < argc; ++i) {
         buf << argv[i] << " ";
+    }
     int dimX, dimY, dimZ, repeats;
     buf >> dimX;
     buf >> dimY;
     buf >> dimZ;
     buf >> repeats;
+    dim3 blockDim(32, 32, 1);
+
+    if (argc > 5) {
+        buf >> blockDim.x;
+    }
+
+    if (argc > 6) {
+        buf >> blockDim.y;
+    }
+
+    if (argc > 7) {
+        buf >> blockDim.z;
+    }
 
     int size = dimX * dimY * dimZ;
     std::vector<double> gridOld(size);
@@ -105,7 +120,7 @@ int main(int argc, char **argv)
     init(&gridOld[0], dimX, dimY, dimZ);
     init(&gridNew[0], dimX, dimY, dimZ);
 
-    benchmark(&gridOld, &gridNew, dimX, dimY, dimZ, repeats);
+    benchmark(&gridOld, &gridNew, dimX, dimY, dimZ, repeats, blockDim);
 
     print(&gridOld[0], dimX, dimY, dimZ);
 }
