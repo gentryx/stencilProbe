@@ -2,6 +2,8 @@
 #include <sstream>
 #include <vector>
 
+#include "eval.h"
+
 #define GET(X, Y, Z) gridOld[(X) + (Y) * dimX + (Z) * dimX * dimY]
 #define SET(X, Y, Z) gridNew[(X) + (Y) * dimX + (Z) * dimX * dimY]
 
@@ -50,10 +52,17 @@ void print(double *gridOld, int dimX, int dimY, int dimZ)
 
 void benchmark(std::vector<double> *gridOld, std::vector<double> *gridNew, int dimX, int dimY, int dimZ, int repeats)
 {
+    double tStartInit = getUTtime();
+    double tStartCalc = getUTtime();
+
     for (int t = 0; t < repeats; ++t) {
         update(&gridOld->front(), &gridNew->front(), dimX, dimY, dimZ);
         std::swap(gridOld, gridNew);
     }
+
+    double tEndCalc = getUTtime();
+    double tEnd = getUTtime();
+    eval(tStartInit, tStartCalc, tEndCalc, tEnd, dimX, dimY, dimZ, repeats);
 }
 
 int main(int argc, char **argv)

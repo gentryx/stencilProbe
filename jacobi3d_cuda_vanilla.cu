@@ -2,6 +2,8 @@
 #include <sstream>
 #include <vector>
 
+#include "eval.h"
+
 #define GET(X, Y, Z) gridOld[(X) + (Y) * dimX + (Z) * dimX * dimY]
 #define SET(X, Y, Z) gridNew[(X) + (Y) * dimX + (Z) * dimX * dimY]
 
@@ -63,6 +65,9 @@ int divAndRoundUp(int dim, int blockDim)
 
 void benchmark(std::vector<double> *gridOld, std::vector<double> *gridNew, int dimX, int dimY, int dimZ, int repeats, dim3 blockDim)
 {
+    cudaDeviceSynchronize();
+    double tStartInit = getUTtime();
+
     int byteSize = dimX * dimY * dimZ * sizeof(double);
     double *devGridOld;
     double *devGridNew;
@@ -74,14 +79,24 @@ void benchmark(std::vector<double> *gridOld, std::vector<double> *gridNew, int d
                  divAndRoundUp(dimY, blockDim.y),
                  divAndRoundUp(dimZ, blockDim.z));
 
+    cudaDeviceSynchronize();
+    double tStartCalc = getUTtime();
+
     for (int t = 0; t < repeats; ++t) {
         update<<<gridDim, blockDim>>>(devGridOld, devGridNew, dimX, dimY, dimZ);
         std::swap(devGridOld, devGridNew);
     }
 
+    cudaDeviceSynchronize();
+    double tEndCalc = getUTtime();
+
     cudaMemcpy(&gridOld->front(), devGridOld, byteSize, cudaMemcpyDeviceToHost);
     cudaFree(devGridOld);
     cudaFree(devGridNew);
+
+    cudaDeviceSynchronize();
+    double tEnd = getUTtime();
+    eval(tStartInit, tStartCalc, tEndCalc, tEnd, dimX, dimY, dimZ, repeats);
 }
 
 int main(int argc, char **argv)
