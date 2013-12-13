@@ -39,7 +39,6 @@ stencilProbe comes with a standard CMake script, configuration of the compiler i
 ===============
 
 Q: All those codes are horribly redundant. Why?
-
 A: The purpose of the codes is to track which (minimal) modifications
    to a sequential, vanilla code are required to implement certain
    features.
