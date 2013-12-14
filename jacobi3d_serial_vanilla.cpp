@@ -12,12 +12,13 @@ void update(double *gridOld, double *gridNew, int dimX, int dimY, int dimZ)
     for (int z = 0; z < dimZ; ++z) {
         for (int y = 0; y < dimY; ++y) {
             for (int x = 0; x < dimX; ++x) {
-                SET(x, y, z) = (GET(x, y, z - 1) +
-                                GET(x, y - 1, z) +
-                                GET(x - 1, y, z) +
-                                GET(x + 1, y, z) +
-                                GET(x, y + 1, z) +
-                                GET(x, y, z + 1)) * (1.0 / 6.0);
+                SET(x, y, z) = (GET(x,     y,     z - 1) +
+                                GET(x,     y - 1, z    ) +
+                                GET(x - 1, y,     z    ) +
+                                GET(x,     y,     z    ) +
+                                GET(x + 1, y,     z    ) +
+                                GET(x,     y + 1, z    ) +
+                                GET(x,     y,     z + 1)) * (1.0 / 7.0);
             }
         }
     }

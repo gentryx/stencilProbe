@@ -15,15 +15,16 @@ void update(double *gridOld, double *gridNew, int dimX, int dimY, int dimZ)
         for (int y = 0; y < dimY; ++y) {
             int x = 0;
             for (; x < 4; ++x) {
-                SET(x, y, z) = (GET(x, y, z - 1) +
-                                GET(x, y - 1, z) +
-                                GET(x - 1, y, z) +
-                                GET(x + 1, y, z) +
-                                GET(x, y + 1, z) +
-                                GET(x, y, z + 1)) * (1.0 / 6.0);
+                SET(x, y, z) = (GET(x,     y,     z - 1) +
+                                GET(x,     y - 1, z    ) +
+                                GET(x - 1, y,     z    ) +
+                                GET(x,     y,     z    ) +
+                                GET(x + 1, y,     z    ) +
+                                GET(x,     y + 1, z    ) +
+                                GET(x,     y,     z + 1)) * (1.0 / 7.0);
             }
 
-            __m256d oneSixth = _mm256_set1_pd(1.0 / 6.0);
+            __m256d oneSeventh = _mm256_set1_pd(1.0 / 7.0);
 
             for (; x < (dimX - 15); x += 16) {
                 // load south
@@ -86,26 +87,39 @@ void update(double *gridOld, double *gridNew, int dimX, int dimY, int dimZ)
                 sum2 = _mm256_add_pd(sum2, bufC);
                 sum3 = _mm256_add_pd(sum3, bufD);
 
+                // load same
+                bufA = _mm256_load_pd(&GET(x +  0, y, z));
+                bufB = _mm256_load_pd(&GET(x +  4, y, z));
+                bufC = _mm256_load_pd(&GET(x +  8, y, z));
+                bufD = _mm256_load_pd(&GET(x + 12, y, z));
+
                 // add (south+top+west+east+bottom) and north
                 sum0 = _mm256_add_pd(sum0, buf0);
                 sum1 = _mm256_add_pd(sum1, buf1);
                 sum2 = _mm256_add_pd(sum2, buf2);
                 sum3 = _mm256_add_pd(sum3, buf3);
 
+                // add (south+top+west+east+bottom+north) and same
+                sum0 = _mm256_add_pd(sum0, bufA);
+                sum1 = _mm256_add_pd(sum1, bufB);
+                sum2 = _mm256_add_pd(sum2, bufC);
+                sum3 = _mm256_add_pd(sum3, bufD);
+
                 // scale down
-                sum0 = _mm256_mul_pd(sum0, oneSixth);
-                sum1 = _mm256_mul_pd(sum1, oneSixth);
-                sum2 = _mm256_mul_pd(sum2, oneSixth);
-                sum3 = _mm256_mul_pd(sum3, oneSixth);
+                sum0 = _mm256_mul_pd(sum0, oneSeventh);
+                sum1 = _mm256_mul_pd(sum1, oneSeventh);
+                sum2 = _mm256_mul_pd(sum2, oneSeventh);
+                sum3 = _mm256_mul_pd(sum3, oneSeventh);
             }
 
             for (; x < dimX; ++x) {
-                SET(x, y, z) = (GET(x, y, z - 1) +
-                                GET(x, y - 1, z) +
-                                GET(x - 1, y, z) +
-                                GET(x + 1, y, z) +
-                                GET(x, y + 1, z) +
-                                GET(x, y, z + 1)) * (1.0 / 6.0);
+                SET(x, y, z) = (GET(x,     y,     z - 1) +
+                                GET(x,     y - 1, z    ) +
+                                GET(x - 1, y,     z    ) +
+                                GET(x,     y,     z    ) +
+                                GET(x + 1, y,     z    ) +
+                                GET(x,     y + 1, z    ) +
+                                GET(x,     y,     z + 1)) * (1.0 / 7.0);
             }
         }
     }

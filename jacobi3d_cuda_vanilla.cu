@@ -14,12 +14,13 @@ __global__ void update(double *gridOld, double *gridNew, int dimX, int dimY, int
     int y = threadIdx.y + blockIdx.y * blockDim.y;
     int z = threadIdx.z + blockIdx.z * blockDim.z;
 
-    SET(x, y, z) = (GET(x, y, z - 1) +
-                    GET(x, y - 1, z) +
-                    GET(x - 1, y, z) +
-                    GET(x + 1, y, z) +
-                    GET(x, y + 1, z) +
-                    GET(x, y, z + 1)) * (1.0 / 6.0);
+    SET(x, y, z) = (GET(x,     y,     z - 1) +
+                    GET(x,     y - 1, z    ) +
+                    GET(x - 1, y,     z    ) +
+                    GET(x,     y,     z    ) +
+                    GET(x + 1, y,     z    ) +
+                    GET(x,     y + 1, z    ) +
+                    GET(x,     y,     z + 1)) * (1.0 / 7.0);
 }
 
 void init(double *gridNew, int dimX, int dimY, int dimZ)

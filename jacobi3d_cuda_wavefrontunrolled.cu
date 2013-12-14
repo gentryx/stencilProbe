@@ -24,39 +24,44 @@ __global__ void update(double *gridOld, double *gridNew, int dimX, int dimY, int
         SET(x, y, z + 0) = (GET(x,     y,     z - 1) +
                             GET(x,     y - 1, z + 0) +
                             GET(x - 1, y,     z + 0) +
+                            GET(x,     y,     z    ) +
                             GET(x + 1, y,     z + 0) +
                             GET(x,     y + 1, z + 0) +
-                            GET(x,     y,     z + 1)) * (1.0 / 6.0);
+                            GET(x,     y,     z + 1)) * (1.0 / 7.0);
 
         SET(x, y, z + 1) = (GET(x,     y,     z + 0) +
                             GET(x,     y - 1, z + 1) +
                             GET(x - 1, y,     z + 1) +
+                            GET(x,     y,     z    ) +
                             GET(x + 1, y,     z + 1) +
                             GET(x,     y + 1, z + 1) +
-                            GET(x,     y,     z + 2)) * (1.0 / 6.0);
+                            GET(x,     y,     z + 2)) * (1.0 / 7.0);
 
         SET(x, y, z + 2) = (GET(x,     y,     z + 1) +
                             GET(x,     y - 1, z + 2) +
                             GET(x - 1, y,     z + 2) +
+                            GET(x,     y,     z    ) +
                             GET(x + 1, y,     z + 2) +
                             GET(x,     y + 1, z + 2) +
-                            GET(x,     y,     z + 3)) * (1.0 / 6.0);
+                            GET(x,     y,     z + 3)) * (1.0 / 7.0);
 
         SET(x, y, z + 3) = (GET(x,     y,     z + 2) +
                             GET(x,     y - 1, z + 3) +
                             GET(x - 1, y,     z + 3) +
+                            GET(x,     y,     z    ) +
                             GET(x + 1, y,     z + 3) +
                             GET(x,     y + 1, z + 3) +
-                            GET(x,     y,     z + 4)) * (1.0 / 6.0);
+                            GET(x,     y,     z + 4)) * (1.0 / 7.0);
     }
 
     for (; z < zEnd; ++z) {
-        SET(x, y, z) = (GET(x, y, z - 1) +
-                        GET(x, y - 1, z) +
-                        GET(x - 1, y, z) +
-                        GET(x + 1, y, z) +
-                        GET(x, y + 1, z) +
-                        GET(x, y, z + 1)) * (1.0 / 6.0);
+        SET(x, y, z) = (GET(x,     y,     z - 1) +
+                        GET(x,     y - 1, z    ) +
+                        GET(x - 1, y,     z    ) +
+                        GET(x,     y,     z    ) +
+                        GET(x + 1, y,     z    ) +
+                        GET(x,     y + 1, z    ) +
+                        GET(x,     y,     z + 1)) * (1.0 / 7.0);
     }
 }
 
