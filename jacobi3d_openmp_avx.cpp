@@ -5,15 +5,15 @@
 
 #include "eval.h"
 
-#define GET(X, Y, Z) gridOld[(X) + (Y) * dimX + (Z) * dimX * dimY]
-#define SET(X, Y, Z) gridNew[(X) + (Y) * dimX + (Z) * dimX * dimY]
+#define GET(X, Y, Z) gridOld[((X + dimX) % dimX) + ((Y + dimY) % dimY) * dimX + ((Z + dimZ) % dimZ) * dimX * dimY]
+#define SET(X, Y, Z) gridNew[((X + dimX) % dimX) + ((Y + dimY) % dimY) * dimX + ((Z + dimZ) % dimZ) * dimX * dimY]
 
 void update(double *gridOld, double *gridNew, int dimX, int dimY, int dimZ)
 {
 #pragma omp parallel for
-    for (int z = 1; z < (dimZ - 1); ++z) {
-        for (int y = 1; y < (dimY - 1); ++y) {
-            int x = 1;
+    for (int z = 0; z < dimZ; ++z) {
+        for (int y = 0; y < dimY; ++y) {
+            int x = 0;
             for (; x < 4; ++x) {
                 SET(x, y, z) = (GET(x, y, z - 1) +
                                 GET(x, y - 1, z) +
@@ -25,7 +25,7 @@ void update(double *gridOld, double *gridNew, int dimX, int dimY, int dimZ)
 
             __m256d oneSixth = _mm256_set1_pd(1.0 / 6.0);
 
-            for (; x < (dimX - 16); x += 16) {
+            for (; x < (dimX - 15); x += 16) {
                 // load south
                 __m256d sum0 = _mm256_load_pd(&GET(x +  0, y, z - 1));
                 __m256d sum1 = _mm256_load_pd(&GET(x +  4, y, z - 1));
@@ -99,7 +99,7 @@ void update(double *gridOld, double *gridNew, int dimX, int dimY, int dimZ)
                 sum3 = _mm256_mul_pd(sum3, oneSixth);
             }
 
-            for (; x < (dimX - 1); ++x) {
+            for (; x < dimX; ++x) {
                 SET(x, y, z) = (GET(x, y, z - 1) +
                                 GET(x, y - 1, z) +
                                 GET(x - 1, y, z) +

@@ -1,23 +1,18 @@
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <vector>
 
 #include "eval.h"
 
-#define GET(X, Y, Z) gridOld[(X) + (Y) * dimX + (Z) * dimX * dimY]
-#define SET(X, Y, Z) gridNew[(X) + (Y) * dimX + (Z) * dimX * dimY]
+#define GET(X, Y, Z) gridOld[((X + dimX) % dimX) + ((Y + dimY) % dimY) * dimX + ((Z + dimZ) % dimZ) * dimX * dimY]
+#define SET(X, Y, Z) gridNew[((X + dimX) % dimX) + ((Y + dimY) % dimY) * dimX + ((Z + dimZ) % dimZ) * dimX * dimY]
 
 __global__ void update(double *gridOld, double *gridNew, int dimX, int dimY, int dimZ)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
     int z = threadIdx.z + blockIdx.z * blockDim.z;
-
-    if ((x == 0) || (x >= (dimX - 1)) ||
-        (y == 0) || (y >= (dimY - 1)) ||
-        (z == 0) || (z >= (dimZ - 1))) {
-        return;
-    }
 
     SET(x, y, z) = (GET(x, y, z - 1) +
                     GET(x, y - 1, z) +
@@ -63,8 +58,18 @@ int divAndRoundUp(int dim, int blockDim)
     return res;
 }
 
+void checkForCUDAError()
+{
+    cudaError_t error = cudaGetLastError();
+    if (error != cudaSuccess) {
+        std::cerr << "ERROR: " << cudaGetErrorString(error) << "\n";
+        throw std::runtime_error("CUDA error");
+    }
+}
+
 void benchmark(std::vector<double> *gridOld, std::vector<double> *gridNew, int dimX, int dimY, int dimZ, int repeats, dim3 blockDim)
 {
+    checkForCUDAError();
     cudaDeviceSynchronize();
     double tStartInit = getUTtime();
 
@@ -96,6 +101,7 @@ void benchmark(std::vector<double> *gridOld, std::vector<double> *gridNew, int d
 
     cudaDeviceSynchronize();
     double tEnd = getUTtime();
+    checkForCUDAError();
     eval(tStartInit, tStartCalc, tEndCalc, tEnd, dimX, dimY, dimZ, repeats);
 }
 

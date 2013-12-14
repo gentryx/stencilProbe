@@ -5,25 +5,20 @@
 
 #include "eval.h"
 
-#define GET(X, Y, Z) gridOld[(X) + (Y) * dimX + (Z) * dimX * dimY]
-#define SET(X, Y, Z) gridNew[(X) + (Y) * dimX + (Z) * dimX * dimY]
+#define GET(X, Y, Z) gridOld[((X + dimX) % dimX) + ((Y + dimY) % dimY) * dimX + ((Z + dimZ) % dimZ) * dimX * dimY]
+#define SET(X, Y, Z) gridNew[((X + dimX) % dimX) + ((Y + dimY) % dimY) * dimX + ((Z + dimZ) % dimZ) * dimX * dimY]
 
 __global__ void update(double *gridOld, double *gridNew, int dimX, int dimY, int dimZ, int wavefrontLength)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
 
-    int zStart = blockIdx.z * wavefrontLength + 1;
+    int zStart = blockIdx.z * wavefrontLength;
     int zEnd = zStart + wavefrontLength;
     if (zEnd > dimZ) {
         zEnd = dimZ;
     }
     int z = zStart;
-
-    if ((x == 0) || (x >= (dimX - 1)) ||
-        (y == 0) || (y >= (dimY - 1))) {
-        return;
-    }
 
     for (; z < zEnd - 3; ++z) {
         SET(x, y, z + 0) = (GET(x,     y,     z - 1) +

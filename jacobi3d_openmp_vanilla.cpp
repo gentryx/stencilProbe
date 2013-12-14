@@ -4,15 +4,15 @@
 
 #include "eval.h"
 
-#define GET(X, Y, Z) gridOld[(X) + (Y) * dimX + (Z) * dimX * dimY]
-#define SET(X, Y, Z) gridNew[(X) + (Y) * dimX + (Z) * dimX * dimY]
+#define GET(X, Y, Z) gridOld[((X + dimX) % dimX) + ((Y + dimY) % dimY) * dimX + ((Z + dimZ) % dimZ) * dimX * dimY]
+#define SET(X, Y, Z) gridNew[((X + dimX) % dimX) + ((Y + dimY) % dimY) * dimX + ((Z + dimZ) % dimZ) * dimX * dimY]
 
 void update(double *gridOld, double *gridNew, int dimX, int dimY, int dimZ)
 {
 #pragma omp parallel for
-    for (int z = 1; z < (dimZ - 1); ++z) {
-        for (int y = 1; y < (dimY - 1); ++y) {
-            for (int x = 1; x < (dimX - 1); ++x) {
+    for (int z = 0; z < dimZ; ++z) {
+        for (int y = 0; y < dimY; ++y) {
+            for (int x = 0; x < dimX; ++x) {
                 SET(x, y, z) = (GET(x, y, z - 1) +
                                 GET(x, y - 1, z) +
                                 GET(x - 1, y, z) +
